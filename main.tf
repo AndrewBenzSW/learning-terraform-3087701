@@ -51,33 +51,31 @@ module "autoscaling" {
 
 module "blog_alb" {
   source = "terraform-aws-modules/alb/aws"
+  version = "6.0.0"
 
   name    = "blog-alb"
   vpc_id  = module.blog_vpc.vpc_id
   subnets = module.blog_vpc.public_subnets
 
   security_groups = [module.blog_sg.security_group_id]
-  create_security_group = false
 
-  target_groups = {
-    ex-instance = {
+  target_groups = [
+    {
       name_prefix      = "blog-"
-      protocol         = "HTTP"
-      port             = 80
+      backend_protocol = "HTTP"
+      backend_port     = 80
       target_type      = "instance"
     }
-  }
+  ]
 
-  listeners = {
-    http = {
+  http_tcp_listeners = [
+    {
       port = 80
       protocol = "HTTP"
 
-      forward = {
-        target_group_key = "ex-instance"
-      }
+      target_group_index = 0
     }
-  }
+  ]
 
   tags = {
     Environment = "dev"
